@@ -1,0 +1,132 @@
+[project]
+name = "nvs-runtime"
+version = "1.0.0"
+description = "NVS Runtime — provider-agnostic execution substrate for layer-oriented AI systems"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "GemminAI" }]
+keywords = [
+    "nvs",
+    "runtime",
+    "ai-runtime",
+    "agent",
+    "orchestration",
+    "mcp",
+    "llm",
+    "hext",
+    "hekb",
+    "middleware",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.10.0",
+    # Not published yet: until then install it from the NVS-Kernel product's package.
+    "nvs-observation>=0.1.0.dev0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2.0"]
+http = ["httpx>=0.28.0"]
+# HiddenStateReplayProvider (providers/replay.py) reads hidden.npy files via mmap --
+# unlike McpProvider/HttpProvider, it has no meaningful offline-stub mode without
+# numpy, so this is a hard import in that one module, gated behind this extra rather
+# than added to the core `dependencies` above (keeping the provider-agnostic core
+# minimal -- this provider is opt-in, never registered by `build_runtime`'s defaults).
+replay = ["numpy>=1.26"]
+# HekbVNextObjectStore imports hekb-vnext's own blob encoder (storage/trajectory_blob.py),
+# which uses the stdlib `compression.zstd` on Python >= 3.14 and falls back to this
+# package on older interpreters (hekb-vnext's requirements.txt pins the same floor).
+# Without it, on Python < 3.14, storing to hekb-vnext fails with ModuleNotFoundError.
+hekb = ["zstandard>=0.25"]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13",
+    # same as the `hekb` extra, repeated so `pip install -e ".[dev]"` can run the
+    # hekb-vnext-dependent tests on Python < 3.14 (e.g. the VM's 3.12) out of the box.
+    "zstandard>=0.25",
+    # The T1 schema check uses this (Draft 2020-12 and referencing).
+    "jsonschema>=4.18",
+]
+
+[project.urls]
+Homepage = "https://github.com/GemminAI/nvs-runtime"
+Repository = "https://github.com/GemminAI/nvs-runtime"
+Documentation = "https://github.com/GemminAI/nvs-runtime/blob/main/docs/architecture.md"
+Issues = "https://github.com/GemminAI/nvs-runtime/issues"
+Changelog = "https://github.com/GemminAI/nvs-runtime/blob/main/.github/RELEASE_NOTES_v1.0.0.md"
+
+[project.scripts]
+sensos-observe = "nvs_runtime.hidden_trajectory.cli:entry"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nvs_runtime"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["nvs_runtime"]
+omit = [
+    "*/nvs_runtime/providers/mcp.py",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+disallow_any_generics = true
+plugins = []
+
+[[tool.mypy.overrides]]
+# Third-party stubs this strict set would otherwise fail without (same exception
+# shape as the NVS-Kernel product's own mypy settings, which this config
+# otherwise matches exactly).
+module = ["mcp.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# nvs_edge (the NVS-Kernel edge package) has no py.typed
+# marker, so mypy treats every name from it as Any even though its own source is fully typed.
+# Narrowed to this one package rather than loosening the project-wide strict settings above.
+module = ["nvs_edge.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# storage.trajectory_blob is hekb-vnext's module, reached only via a runtime
+# sys.path insertion (integrations/hekb_vnext.py's own documented cross-repo
+# import) -- it has no installed distribution for mypy to resolve statically.
+module = ["storage.*"]
+ignore_missing_imports = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

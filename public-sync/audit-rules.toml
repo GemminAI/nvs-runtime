@@ -1,0 +1,115 @@
+# Public audit rules for audit_artifacts.py (layers 1 and 3 only; the non-public layers are
+# kept elsewhere). Every pattern here is a regular expression written so that this file does not
+# match its own rules. With normalize = true (the default) the pattern is applied to normalized
+# text: NFKC, case-folded, hiragana turned into katakana, zero-width characters removed, and each
+# run of "_", "-" or white space turned into one space. A rule with fold_separators = false
+# skips that last step only (so "a_b" and "a-b" stay different).
+
+visibility = "public"
+
+# ---- layer 3: secrets (language independent; applied to the raw text) -------------------------
+
+[[rule]]
+id = "secret.private-key-block"
+layer = 3
+kind = "regex"
+pattern = 'BEGIN [A-Z ]*PRIVATE KEY'
+scope = "content"
+normalize = false
+description = "A private key block."
+
+[[rule]]
+id = "secret.known-token-shape"
+layer = 3
+kind = "regex"
+pattern = '\b(?:sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|xox[bp]-[A-Za-z0-9-]{10,}|AKIA[A-Z0-9]{16})\b'
+scope = "content"
+normalize = false
+description = "The shape of a common API key or access token."
+
+[[rule]]
+id = "secret.long-mixed-string"
+layer = 3
+kind = "regex"
+pattern = '(?<!sha256=)\b(?![0-9a-f]{40}\b|[0-9a-f]{64}\b)(?=[A-Za-z0-9+/_-]*\d)(?=[A-Za-z0-9+/_-]*[A-Za-z])[A-Za-z0-9+/_-]{40,}\b'
+scope = "content"
+normalize = false
+description = "A long string of letters and digits that looks like a key or token (hex digests and file hashes excluded)."
+
+# ---- layer 1: information that must not be published (general part) --------------------------
+
+[[rule]]
+id = "path.local-unix-home"
+layer = 1
+kind = "regex"
+pattern = '/(?:[U]sers|home)/[A-Za-z_][\w.-]*/'
+scope = "content"
+normalize = false
+description = "An absolute path into a personal home folder."
+
+[[rule]]
+id = "path.local-windows-home"
+layer = 1
+kind = "regex"
+pattern = '[A-Za-z]:\\Users\\'
+scope = "content"
+normalize = false
+description = "An absolute path into a Windows user folder."
+
+[[rule]]
+id = "identity.email-address"
+layer = 1
+kind = "regex"
+pattern = '[\w.+-]+@[\w-]+(?:\.[\w-]+)+'
+scope = "both"
+normalize = false
+description = "An e-mail address."
+
+[[rule]]
+id = "identity.person-name"
+layer = 1
+kind = "regex"
+pattern = '中村 ?友彦|ナカムラ ?トモヒコ|トモヒコ ?ナカムラ|tomohiko[ .]?nakamura|nakamura[ .]?tomohiko'
+scope = "both"
+description = "A personal name (kanji, kana and romanized forms)."
+
+[[rule]]
+id = "name.internal-package"
+layer = 1
+kind = "regex"
+pattern = 'nvs[_]kernel(?![a-z0-9])'
+scope = "both"
+fold_separators = false
+description = "The name of an internal package."
+
+[[rule]]
+id = "wording.private-repository"
+layer = 1
+kind = "regex"
+pattern = 'private[ ]nvs[ ]kernel'
+scope = "both"
+description = "Wording that points at a repository that is not published."
+
+[[rule]]
+id = "wording.unpublished-checks"
+layer = 1
+kind = "regex"
+pattern = 'private[ ]integration'
+scope = "both"
+description = "Wording about checks that are not published."
+
+[[rule]]
+id = "wording.unpublished-constants"
+layer = 1
+kind = "regex"
+pattern = 'internal[ ]constants'
+scope = "both"
+description = "Wording about constants that are not published."
+
+[[rule]]
+id = "number.decision-id"
+layer = 1
+kind = "regex"
+pattern = '\bd ?2\d\d\b'
+scope = "both"
+description = "A decision number of the form D-2xx."
