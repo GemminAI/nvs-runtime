@@ -5,6 +5,8 @@
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+# nvs-observation is not on PyPI yet, so install it from GitHub first
+pip install "git+https://github.com/GemminAI/nvs-observation.git"
 pip install -e ".[dev]"
 ```
 

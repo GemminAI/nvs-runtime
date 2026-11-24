@@ -125,9 +125,11 @@ src/nvs_runtime/session/manager.py
 src/nvs_runtime/transport/__init__.py
 src/nvs_runtime/transport/memory.py
 tests/conftest.py
+tests/edge_env.py
 tests/fake_observe_adapter.py
 tests/fixtures/hidden_trajectory/contract-facts-from-u4.json
 tests/fixtures/hidden_trajectory/contract-v2-u4-base.json
+tests/test_edge_env.py
 tests/test_edge_provider.py
 tests/test_events_observability.py
 tests/test_gate_child_payload_kind.py

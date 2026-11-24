@@ -26,6 +26,8 @@ Providers (MCP · HTTP · gRPC · Local · Kernel · HEKB · …)
 ## Installation
 
 ```bash
+# nvs-observation is not on PyPI yet, so install it from GitHub first
+pip install "git+https://github.com/GemminAI/nvs-observation.git"
 pip install -e ".[dev]"
 ```
 
@@ -157,7 +159,7 @@ pytest --cov=nvs_runtime --cov-report=term-missing
 
 - Offline and deterministic
 - No external APIs or API keys
-- Coverage target ≥ 90%
+- Coverage target ≥ 90%. The 90% gate applies where the NVS-Kernel edge and sensos are installed; the public CI reports coverage without gating on it.
 
 ## Roadmap
 

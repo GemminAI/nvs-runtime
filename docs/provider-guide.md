@@ -78,4 +78,10 @@ MCP is **only** `providers/mcp.py`.
 
 - Core API does not know about MCP tools or stdio
 - `create_mcp_bridge(runtime)` projects discover() into tool descriptors
-- Optional dependency: `pip install nvs-runtime[mcp]`
+- Optional dependency (nvs-runtime is not on PyPI yet, and neither is nvs-observation, so both come
+  from GitHub): install nvs-observation first, then the `mcp` extra:
+
+  ```bash
+  pip install "git+https://github.com/GemminAI/nvs-observation.git"
+  pip install "nvs-runtime[mcp] @ git+https://github.com/GemminAI/nvs-runtime.git"
+  ```

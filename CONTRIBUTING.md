@@ -11,6 +11,8 @@ git clone https://github.com/GemminAI/nvs-runtime.git
 cd nvs-runtime
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
+# nvs-observation is not on PyPI yet, so install it from GitHub first
+pip install "git+https://github.com/GemminAI/nvs-observation.git"
 pip install -e ".[dev]"
 ```
 

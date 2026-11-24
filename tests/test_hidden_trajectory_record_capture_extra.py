@@ -15,6 +15,7 @@ import nvs_observation.capture_check as capture_check
 import nvs_observation.capture_edge as capture_edge
 import nvs_observation.capture_map as capture_map
 import pytest
+from edge_env import requires_edge, requires_no_edge
 from nvs_observation.capture_extra import build_capture_extra
 from nvs_observation.contract_build import contract_from_capture
 from test_hidden_trajectory_envelope import OBSERVATION, SESSION, empty_capture
@@ -155,11 +156,35 @@ def test_with_gate_result_still_returns_a_valid_copy() -> None:
 # ---- T-U65-11 --------------------------------------------------------------------------------
 
 
+@requires_edge
 def test_t_u65_11_the_record_of_an_empty_generation_keeps_the_conditions_and_the_origin() -> None:
     capture = make_capture(n_gen=0, provenance={"sampler": {"temperature": 0.7, "top_k": 1}})
     facts = make_facts(capture)
     built = contract_from_capture(capture, facts, session_id="s", synthetic=False)
     assert built.refusals == ("empty_generation",) and built.contract is None
+    record = empty_generation_record(
+        session_id=SESSION,
+        observation_id=OBSERVATION,
+        capture=built.capture_block,
+        capture_extra=built.capture_extra,
+    )
+    assert record["outcome"] == "empty_generation" and record["capture"]["n_gen"] == 0
+    values = record["capture_extra"]["values"]
+    assert values["sampler"] == {"temperature": 0.7, "top_k": 1}
+    assert values["max_tokens"] == 8 and values["chat_template_kwargs"] == {}
+    assert values["origin"] == facts["origin"]
+    assert record["positions"]["final_norm"]["reasons"] == ["empty_generation"]
+    assert validate_record(record) == []
+    assert json.loads(json.dumps(record)) == record
+
+
+@requires_no_edge
+def test_an_empty_generation_without_the_edge_package_keeps_the_conditions() -> None:
+    capture = make_capture(n_gen=0, provenance={"sampler": {"temperature": 0.7, "top_k": 1}})
+    facts = make_facts(capture)
+    built = contract_from_capture(capture, facts, session_id="s", synthetic=False)
+    assert built.refusals == ("edge_unavailable", "empty_generation") and built.contract is None
+    assert built.refusal_details == ("edge_unavailable: nvs_edge", "empty_generation: n_gen is 0")
     record = empty_generation_record(
         session_id=SESSION,
         observation_id=OBSERVATION,
@@ -234,10 +259,22 @@ def test_the_reasons_of_u6_5_are_constants_with_the_values_the_design_names() ->
     assert capture_map.EMPTY_GENERATION is record_module.REASON_EMPTY_GENERATION
 
 
+@requires_edge
 def test_origin_facts_of_a_wrong_shape_is_origin_facts_invalid_in_the_record() -> None:
     capture = make_capture()
     built = contract_from_capture(capture, {"origin": None}, session_id="s", synthetic=False)
     assert built.refusals == ("origin_facts_invalid",)
     assert built.refusal_details == (
         "origin_facts_invalid: origin_facts.origin is missing or not a mapping",
+    )
+
+
+@requires_no_edge
+def test_origin_facts_of_a_wrong_shape_without_the_edge_package_adds_its_reason() -> None:
+    capture = make_capture()
+    built = contract_from_capture(capture, {"origin": None}, session_id="s", synthetic=False)
+    assert built.refusals == ("origin_facts_invalid", "edge_unavailable")
+    assert built.refusal_details == (
+        "origin_facts_invalid: origin_facts.origin is missing or not a mapping",
+        "edge_unavailable: nvs_edge",
     )
