@@ -19,8 +19,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install nvs-observation (not on PyPI yet)
-        run: pip install "git+https://github.com/GemminAI/nvs-observation.git"
+      # nvs-observation (a dependency) is installed from PyPI.
       - name: Install
         run: pip install -e ".[dev,replay]"
       - name: Lint

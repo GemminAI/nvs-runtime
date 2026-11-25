@@ -26,8 +26,14 @@ Providers (MCP · HTTP · gRPC · Local · Kernel · HEKB · …)
 ## Installation
 
 ```bash
-# nvs-observation is not on PyPI yet, so install it from GitHub first
-pip install "git+https://github.com/GemminAI/nvs-observation.git"
+pip install nvs-runtime
+```
+
+`nvs-observation` is a dependency and is installed with it.
+
+### Development setup
+
+```bash
 pip install -e ".[dev]"
 ```
 

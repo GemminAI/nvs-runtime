@@ -31,8 +31,6 @@ classifiers = [
 ]
 dependencies = [
     "pydantic>=2.10.0",
-    # Not on PyPI yet: install it first from https://github.com/GemminAI/nvs-observation
-    # (pip install git+https://github.com/GemminAI/nvs-observation.git)
     "nvs-observation>=0.1.0.dev0",
 ]
 
