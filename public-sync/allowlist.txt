@@ -6,6 +6,7 @@
 .github/PULL_REQUEST_TEMPLATE.md
 .github/RELEASE_NOTES_v1.0.0.md
 .github/workflows/ci.yml
+.github/workflows/release.yml
 .gitignore
 CITATION.cff
 CODE_OF_CONDUCT.md
@@ -175,6 +176,7 @@ tests/test_hidden_trajectory_window.py
 tests/test_persistent_plan_session.py
 tests/test_planner_graph.py
 tests/test_providers.py
+tests/test_release_workflow.py
 tests/test_replay_provider.py
 tests/test_runtime_api.py
 tests/test_runtime_coverage.py

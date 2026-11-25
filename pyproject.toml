@@ -61,6 +61,8 @@ dev = [
     "zstandard>=0.25",
     # The T1 schema check uses this (Draft 2020-12 and referencing).
     "jsonschema>=4.18",
+    # tests/test_release_workflow.py reads the release workflow as YAML.
+    "pyyaml>=6.0",
 ]
 
 [project.urls]
